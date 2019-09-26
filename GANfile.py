@@ -43,9 +43,12 @@ class GAN:
         self.cost_plot_fake = []
         self.dis_prediction_real = []
         self.dis_prediction_fake = []
+
+    #get random input
     def get_random_input(self):
         return eval(self.noise_generator)(number = self.generatorANN.layers[0],factor = 1)
 
+    #get false input from the generator
     def fake_input_run(self):
         y = np.array([0, 1])
         input = self.get_random_input()
@@ -63,7 +66,7 @@ class GAN:
         self.generator_weight_dash, self.generator_bias_dash = self.generatorANN.backprop(x = input,y = starting_values_for_GAN_backprop)
         return self.generator_weight_dash, self.generator_bias_dash, self.discriminator_weight_dash, self.descriminator_bias_dash, self.cost
 
-
+    #get weights from the discriminator through backpropogation from a real example
     def disc_get_real_weights(self,input):
         prediction = self.discriminatorANN.predict(input)
         y = self.dis_cost_fun_real(x = prediction,code=1)
@@ -71,6 +74,7 @@ class GAN:
         self.descriminator_weight_dash, self.descriminator_bias_dash = self.discriminatorANN.backprop(x = input,y = y)
         return self.descriminator_weight_dash, self.descriminator_bias_dash
 
+    #get weights from the discriminator through backpropogation from a false example
     def disc_get_fake_weights(self, input):
         prediction = self.discriminatorANN.predict(input)
         self.dis_prediction_fake.append(prediction)
@@ -78,6 +82,7 @@ class GAN:
         self.descriminator_weight_dash, self.descriminator_bias_dash = self.discriminatorANN.backprop(x=input, y=y)
         return self.descriminator_weight_dash, self.descriminator_bias_dash
 
+    #get generator weights from a false example
     def gen_get_fake_weights(self, input):
         fake = self.generatorANN.predict(input)
         prediction = self.discriminatorANN.predict(fake)
@@ -89,6 +94,7 @@ class GAN:
                                                                                           y=starting_values_for_GAN_backprop)
         return self.generator_weight_dash, self.generator_bias_dash
 
+    #a batch of false inputs
     def fake_batch(self,number = 1):
         #takes a number, runs SGD for that number of generated fake inputs
         gen_total_weights_dash = 0
@@ -116,6 +122,8 @@ class GAN:
         self.discriminatorANN.update_weights(learning_rate=self.discriminator_learning_rate,
                                              weight_dash=disc_av_weight_dash,
                                              bias_dash=disc_av_bias_dash)
+
+    #a batch of real inputs
     def real_batch(self,number = 1):
         #takes a number, runs SGD for that number of generated real inputs
         disc_total_weights_dash = 0
@@ -136,6 +144,7 @@ class GAN:
                                              weight_dash=disc_av_weight_dash,
                                              bias_dash=disc_av_bias_dash)
 
+    #update the discriminator
     def update_dicriminator(self,no_fake = 10,no_real = 10):
         fake_data = [self.generatorANN.predict(self.get_random_input()) for i in range(no_fake)]
         real_data = [self.get_real_input() for i in range(no_real)]
@@ -162,6 +171,7 @@ class GAN:
 
         self.discriminatorANN.update_weights(learning_rate = -self.discriminator_learning_rate, weight_dash = av_weight_dash, bias_dash = av_bias_dash)
 
+    #update the generator
     def update_generator(self, no_fake=10):
         noise = [self.get_random_input() for i in range(no_fake)]
         total_weight_dash = np.zeros_like(self.generatorANN.weights)
@@ -174,6 +184,7 @@ class GAN:
         av_bias_dash = total_bias_dash / len(noise)
         self.generatorANN.update_weights(learning_rate = self.generator_learning_rate, weight_dash = av_weight_dash, bias_dash = av_bias_dash)
 
+    #run the network
     def run(self,no = 1000,disc_steps = 2,gen_steps = 1):
         for j in range(no):
             for i in range(disc_steps):
@@ -181,26 +192,31 @@ class GAN:
             for ii in range(gen_steps):
                 self.update_generator()
 
+    #return a real random input from X
     def get_real_input(self):
         return np.array(self.X[np.random.randint(0, len(self.X))])
         #return np.array(self.X[0].flatten())
 
+    #get the cost of the
     def get_cost(self, input = [0, 1, 2, 3, 4],y = np.array([0, 1])):
         fake = self.generatorANN.predict(input_arr=input)
         return self.discriminatorANN.get_cost(input_array=fake,y = y)
 
+    #generator cost function
     def gen_cost_fun(self,x,code=0): #this is trying to min
         if code == 0:
             return math.log(1-x)
         if code == 1:
             return -1/(1-x)
 
+    #discriminator cost function for real
     def dis_cost_fun_real(self,x,code=0): #this is trying to max, not min
         if code == 0:
             return math.log(x)
         if code == 1:
             return 1/x
 
+    #discriminator cost function for fake
     def dis_cost_fun_fake(self,x,code=0): #this is trying to max, not min
         if code == 0:
             return math.log(1-x)
@@ -225,6 +241,7 @@ class GAN:
         # go to day
         # save file as time + 'number' + number
 
+    #make graphs
     def graphs(self):
         if self.save:
             self.save_func()
@@ -250,6 +267,7 @@ class GAN:
         plt.figure()
         plt.imshow(pixels, cmap='gray')
         plt.show(block = False)
+
     @staticmethod
     def mnist_to_array(image_source, image_number):
         return np.array(image_source[image_number].flatten())
@@ -259,6 +277,7 @@ class GAN:
         out = np.zeros(10)
         out[train_labels[image_number]] = 1
         return out
+
 def main():
     route = 2
     if route == 1:
@@ -304,7 +323,7 @@ def main():
         gan = GAN(generator=[100, 300, 500, 784],
                   discriminator=[784, 30, 1],
                   discriminator_learning_rate = 1,
-                  generator_learning_rate = 1.5,
+                  generator_learning_rate = 1.25,
                   #X=X,
                   X=X[pos],
                   save = False)
