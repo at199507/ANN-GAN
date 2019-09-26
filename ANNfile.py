@@ -94,7 +94,7 @@ class ANN:
                 a_values.append(x)
 
                 #z_dash = f_activation'(x)  this information is needed for the backward pass later
-                z_dash_layer = self.act_function(x=x, code = 1)
+                z_dash_layer = self.act_function(x=z, code = 1)
 
                 z_dash.append(z_dash_layer)
 
@@ -315,7 +315,7 @@ def main():
                 X=X,
                 y=y,
                 cost_function='cross_entropy',
-                activation_function='sigmoid',
+                activation_function='ReLU',
                 #optimiser='ADAM',
                 batch_length = 15,
                 learning_rate = 1,
