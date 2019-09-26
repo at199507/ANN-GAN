@@ -29,7 +29,7 @@ class ANN:
         self.y_test = y_test
         self.randomise = randomise
 
-    #initialises the weights and baises of each layer to a random value
+    #initialises the weights and biases of each layer to a random value
     def init_weights(self):
         #weights format = [layer][inputnode][outputnode]
         self.weights = np.array([np.random.random((self.layers[i + 1], self.layers[i])).transpose()/self.layers[i] for i in range(len(self.layers) - 1)])
@@ -97,9 +97,7 @@ class ANN:
                 z_dash_layer = self.act_function(x=x, code = 1)
 
                 z_dash.append(z_dash_layer)
-                if z.dtype != x.dtype:
-                    print("broken")
-                    break
+
         #lambda_vales is the change in cost function with respect to Z of a node, array populated during the backward pass
         self.lambda_values = np.empty_like(a_values)
 
@@ -139,14 +137,14 @@ class ANN:
     #for batch gradient descent calculate the average of the gradients
     def get_weight_bias_dash(self,input_array,y_array):
         total_weights = 0
-        total_baises = 0
+        total_biases = 0
         for ii in range(len(input_array)):
-            weights_dash, baises_dash = self.backprop(x = input_array[ii],y = self.label_to_y(y_array[ii],self.layers[-1]))
+            weights_dash, biases_dash = self.backprop(x = input_array[ii],y = self.label_to_y(y_array[ii],self.layers[-1]))
             total_weights += weights_dash
-            total_baises += baises_dash
+            total_biases += biases_dash
         av_weight_dash = total_weights/len(input_array)
-        av_bais_dash = total_baises/len(input_array)
-        return av_weight_dash, av_bais_dash
+        av_bias_dash = total_biases/len(input_array)
+        return av_weight_dash, av_bias_dash
 
     #get cost function with respect to an input and a target
     def get_cost(self, input_array, y):
