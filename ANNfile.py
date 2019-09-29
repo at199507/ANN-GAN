@@ -6,7 +6,7 @@ import mnist
 import matplotlib.pyplot as plt
 
 class ANN:
-    def __init__(self,layers,X = [],y = [],loss = 'CV',activation_function = 'sigmoid',cost_function = 'cross_entropy', learning_rate = 0.01, batch_length = 1, randomise = True, final_activation_function = 'sigmoid',optimiser = 'SGD',X_test = [],y_test = []):
+    def __init__(self,layers,X = [],y = [],loss = 'CV',activation_function = 'sigmoid',cost_function = 'cross_entropy',learning_rate = 0.01,batch_length = 1,randomise = True,final_activation_function = 'sigmoid',optimiser = 'SGD',X_test = [],y_test = []):
         self.cost_fun =  cost_function # quadratic,
         self.batch_length = batch_length
         self.act_fun = activation_function
@@ -67,7 +67,6 @@ class ANN:
 
         #the forward pass
         for i in range(len(self.weights)):
-
             #if at the final layer ensure the final activation function is used
             if i == len(self.weights)-1:
                 hold = self.act_fun
@@ -85,7 +84,6 @@ class ANN:
                 z_dash.append(z_dash_layer)
                 self.act_fun = hold
             else:
-
                 #retrieve the value at each node in the layer before the activation function
                 z = self.weights[i].transpose().dot(x) + self.bias[i]
                 #retrieve the value after the activation function
@@ -127,7 +125,7 @@ class ANN:
         return weight_dash, bias_dash
 
     #update the weights
-    def update_weights(self, learning_rate, weight_dash, bias_dash):
+    def update_weights(self,learning_rate,weight_dash,bias_dash):
 
         #optimiser function takes the gradients and amends them as necessary for ADAM, SGD
         #i == 0 means weights, i == 1 means biases
@@ -147,7 +145,7 @@ class ANN:
         return av_weight_dash, av_bias_dash
 
     #get cost function with respect to an input and a target
-    def get_cost(self, input_array, y):
+    def get_cost(self,input_array,y):
         x = self.predict(input_array =input_array)
         return self.cost_function(x = x,y = y, code = 0)
 
@@ -221,13 +219,14 @@ class ANN:
         return np.array(image_source[image_number].flatten())
 
     #activation functions
-    def act_function(self, x, code = 0):
+    def act_function(self,x,code = 0):
         if self.act_fun == 'sigmoid':
             if code == 0:
                 return np.array(1 / (1 + np.exp(x * -1)))
             elif code == 1:
-                # same as: np.exp(x*-1)/pow((1+np.exp(x*-1)),2)
-                return np.array(x * (1 - x))
+                # same as:
+                return np.exp(x*-1)/pow((1+np.exp(x*-1)),2)
+                #return np.array(x * (1 - x))
         if self.act_fun == "ReLU":
             if code == 0:
                 return np.array([x[a] if x[a] > 0 else 0 for a in range(len(x))])
@@ -279,7 +278,7 @@ class ANN:
                     return np.array(y)*self.act_function(x=x, code=1)
 
     #functionality to enable ADAM optimiser use
-    def optimiser_func(self, gradients, i):
+    def optimiser_func(self,gradients,i):
         if self.optimiser == 'ADAM':
             return self.run_ADAM(gradients,i = i)*gradients
         if self.optimiser == 'SGD':
@@ -316,6 +315,7 @@ def main():
                 y=y,
                 cost_function='cross_entropy',
                 activation_function='ReLU',
+                #activation_function='sigmoid',
                 #optimiser='ADAM',
                 batch_length = 15,
                 learning_rate = 1,
